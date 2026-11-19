@@ -6,7 +6,7 @@
 title = "arXiv radar"
 description = "Daily arXiv digest: charm, CP, B physics, spectroscopy and machine learning."
 # Public address of the site, used in the RSS feed. Replace YOUR-USERNAME.
-base_url = "https://YOUR-USERNAME.github.io/arxiv-radar/"
+base_url = "https://cpviolation.github.io/arxiv-radar/"
 language = "en"
 
 [fetch]
