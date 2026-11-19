@@ -1,0 +1,80 @@
+name: Daily digest
+
+on:
+  # Weekdays at 06:15 UTC. Change the time here if you like.
+  schedule:
+    - cron: "15 6 * * 1-5"
+  # Manual run from Actions › Daily digest › Run workflow.
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Days to cover (empty = default from config.toml)"
+        required: false
+        default: ""
+  # Changing the configuration, script or style re-renders the site
+  # from the saved data, without fetching new papers.
+  push:
+    branches: [main]
+    paths:
+      - config.toml
+      - arxiv_radar.py
+      - site_assets/**
+
+permissions:
+  contents: write      # commit data/digests and data/seen.json
+  pages: write         # deploy to GitHub Pages
+  id-token: write      # required by actions/deploy-pages
+
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Fetch new papers and build the site
+        if: github.event_name != 'push'
+        env:
+          DAYS: ${{ inputs.days }}
+        run: python arxiv_radar.py run ${DAYS:+--days "$DAYS"}
+
+      - name: Re-render the site from saved data
+        if: github.event_name == 'push'
+        run: python arxiv_radar.py render
+
+      - name: Save the day's data in the repository
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "No new data to commit."
+          else
+            git commit -m "Digest $(date -u +%F)"
+            git pull --rebase
+            git push
+          fi
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
