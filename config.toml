@@ -1,0 +1,117 @@
+# arxiv-radar configuration.
+# Regular expressions are in single quotes (TOML literal strings),
+# so backslashes must not be doubled. Matching is case-insensitive.
+
+[site]
+title = "arXiv radar"
+description = "Daily arXiv digest: charm, CP, B physics, spectroscopy and machine learning."
+# Public address of the site, used in the RSS feed. Replace YOUR-USERNAME.
+base_url = "https://YOUR-USERNAME.github.io/arxiv-radar/"
+language = "en"
+
+[fetch]
+categories = ["hep-ex", "hep-ph", "hep-lat", "nucl-ex", "physics.data-an",
+              "cs.LG", "stat.ML", "q-bio.GN", "q-bio.QM"]
+days_default = 2          # normal window (in days)
+days_monday = 4           # on Monday, also covers the weekend
+max_per_topic = 15
+
+# Category groups reusable in topics.
+[category_groups]
+hep = ["hep-ex", "hep-ph", "hep-lat", "hep-th", "nucl-ex", "nucl-th",
+       "physics.data-an", "physics.ins-det"]
+ml = ["cs.LG", "stat.ML", "cs.AI", "cs.NE"]
+bio = ["q-bio.GN", "q-bio.QM", "q-bio.PE", "q-bio.MN"]
+
+# Reusable term lists.
+[term_sets]
+ml = ['machine[- ]learn', 'deep[- ]learn', 'neural network', '\bGNNs?\b',
+      'graph neural', 'transformer', 'normali[sz]ing flow', 'diffusion model',
+      'generative model', 'autoencoder', 'reinforcement learning',
+      'simulation[- ]based inference', 'foundation model', '\bBDTs?\b',
+      'boosted decision tree', 'anomaly detection', '\bLLMs?\b',
+      'language model', 'contrastive learning', 'equivariant']
+ml_loose = ['learning', 'neural', 'language model']
+genetics = ['genom', '\bgenes?\b', 'genetic', '\bDNA\b', '\bRNA\b', 'sequencing',
+            'single[- ]cell', 'transcriptom', 'variant calling', '\bGWAS\b',
+            'gene expression', 'epigenom', 'protein', 'polygenic']
+
+# One [[topics]] block per topic, in the order they appear on the site.
+#   terms         the topic's own terms
+#   term_sets     lists from [term_sets] added to the terms
+#   require_sets  at least one term from these lists is also required
+#   cats          allowed groups or categories (empty = all)
+#   primary_only  the primary category must be among the allowed ones
+#   also_if_crosslisted  also allowed if cross-listed in these groups
+
+[[topics]]
+name = "Charm physics"
+slug = "charm"
+color = "#2A7F62"
+terms = ['\bcharm', 'charmonium', 'charmed', '\bD-?mesons?\b', '\bD\^0', 'D\^\{?0',
+         'D_s\b', 'D_\{?s', '\\Lambda_c', 'Lambda_c', '\\Xi_c', 'J/\\?psi', '\\psi\(',
+         'c\\bar\{?c', '\bBESIII\b', 'open[- ]charm', 'hidden[- ]charm']
+cats = []
+
+[[topics]]
+name = "CP violation"
+slug = "cp"
+color = "#B23A48"
+terms = ['\bCP[- ]?violat', '\bCPV\b', 'CP asymmetr', 'CP[- ]odd', '\bCKM\b',
+         'unitarity triangle', '\bCP[- ]phase', '\\phi_s\b', '\bphi_s\b',
+         'T[- ]violation', '\bEDMs?\b', 'electric dipole moment',
+         'matter[- ]antimatter', 'baryogenesis']
+cats = ["hep"]
+
+[[topics]]
+name = "B physics"
+slug = "b"
+color = "#3D5A98"
+terms = ['\bB[- ]mesons?\b', '\bB\^?[0+\-]', 'B_s\b', 'B_\{?s', 'B_c\b',
+         '\bb[- ]hadrons?\b', '\bbeauty\b', 'bottom quark', 'b\s*\\to\s*[sc]',
+         'b\s*->\s*[sc]', '\\Lambda_b', 'Lambda_b', '\bBelle\b', '\bLHCb\b',
+         'R\(D\^?\*?\)', 'lepton flavou?r universality', 'bottomonium', '\\Upsilon']
+cats = ["hep"]
+
+[[topics]]
+name = "Hadron spectroscopy"
+slug = "spectroscopy"
+color = "#8C5A1E"
+terms = ['spectroscop', 'tetraquark', 'pentaquark', 'exotic hadron',
+         'hadron(ic)? molecul', 'molecular state', 'hybrid meson', 'glueball',
+         '\bX\(\d{4}\)', '\bZ_?c?\(\d{4}\)', '\bP_c', '\bT_\{?cc',
+         'excited (baryon|meson)s?', 'resonance parameters', 'amplitude analysis',
+         'partial[- ]wave', 'dalitz', 'quark model']
+cats = ["hep"]
+
+[[topics]]
+name = "ML in particle physics"
+slug = "ml-hep"
+color = "#6B4FA0"
+terms = []
+term_sets = ["ml"]
+cats = ["hep"]
+also_if_crosslisted = ["hep"]
+
+[[topics]]
+name = "New ML methods"
+slug = "ml-methods"
+color = "#1F7A8C"
+# cs.LG publishes hundreds of papers a day: this list decides what to follow.
+terms = ['normali[sz]ing flow', 'flow matching', 'diffusion model', 'score[- ]based',
+         'simulation[- ]based inference', 'equivariant', 'graph neural',
+         'uncertainty quantification', 'conformal prediction', 'bayesian deep',
+         'foundation model', 'state[- ]space model', 'mixture of experts',
+         'self[- ]supervised', 'neural operator', 'kolmogorov[- ]arnold',
+         'anomaly detection', 'interpretab']
+cats = ["ml"]
+primary_only = true
+
+[[topics]]
+name = "ML in genetics"
+slug = "ml-genetics"
+color = "#4F7A28"
+terms = []
+term_sets = ["genetics"]
+require_sets = ["ml", "ml_loose"]
+cats = ["bio", "ml"]
